@@ -20,12 +20,14 @@ async function getAddressFromCEP(cep: string) {
     siafi: string;
     erro?: string;
   };
-  const result = await request.get(`${process.env.VIA_CEP_API}/${cep}/json/`);
+
+  const cepTreat = cep.replace('-', '');
+  if (cepTreat.length !== 8) throw new Error();
+
+  const result = await request.get(`${process.env.VIA_CEP_API}/${cepTreat}/json/`);
   const address = result.data as resultType;
 
-  if (!result.data) {
-    throw notFoundError();
-  }
+  if (address.erro) throw notFoundError();
   delete address.cep;
   delete address.gia;
   delete address.ibge;
