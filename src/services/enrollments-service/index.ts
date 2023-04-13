@@ -4,37 +4,25 @@ import { invalidDataError, notFoundError } from '@/errors';
 import addressRepository, { CreateAddressParams } from '@/repositories/address-repository';
 import enrollmentRepository, { CreateEnrollmentParams } from '@/repositories/enrollment-repository';
 import { exclude } from '@/utils/prisma-utils';
+import { AddressEnrollment } from '@/protocols';
 
-async function getAddressFromCEP(cep: string) {
-  type resultType = {
-    cep: string;
-    logradouro: string;
-    complemento: string;
-    bairro: string;
-    cidade: string;
-    localidade: string;
-    uf: string;
-    ibge: string;
-    gia: string;
-    ddd: string;
-    siafi: string;
-    erro?: string;
+async function getAddressFromCEP(cep: string): Promise<AddressEnrollment> {
+  const result = await request.get(`${process.env.VIA_CEP_API}/${cep}/json/`);
+
+  if (!result.data || result.data.erro) {
+    throw notFoundError(); // lança um erro para quem chamou essa função!
+  }
+
+  const { bairro, localidade, uf, complemento, logradouro } = result.data;
+
+  const address: AddressEnrollment = {
+    bairro,
+    cidade: localidade,
+    uf,
+    complemento,
+    logradouro,
   };
 
-  const cepTreat = cep.replace('-', '');
-  if (cepTreat.length !== 8) throw new Error();
-
-  const result = await request.get(`${process.env.VIA_CEP_API}/${cepTreat}/json/`);
-  const address = result.data as resultType;
-
-  if (address.erro) throw notFoundError();
-  delete address.cep;
-  delete address.gia;
-  delete address.ibge;
-  delete address.ddd;
-  delete address.siafi;
-  address.cidade = address.localidade;
-  delete address.localidade;
   return address;
 }
 

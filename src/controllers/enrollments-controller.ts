@@ -1,7 +1,7 @@
 import { Response } from 'express';
 import httpStatus from 'http-status';
 import { AuthenticatedRequest } from '@/middlewares';
-import enrollmentsService from '@/services/enrollments-service';
+import enrollmentsService from '@/services/enrollments-service/index';
 
 export async function getEnrollmentByUser(req: AuthenticatedRequest, res: Response) {
   const { userId } = req;
@@ -29,19 +29,10 @@ export async function postCreateOrUpdateEnrollment(req: AuthenticatedRequest, re
 }
 
 export async function getAddressFromCEP(req: AuthenticatedRequest, res: Response) {
+  const { cep } = req.query as Record<string, string>;
+
   try {
-    type cepType = {
-      cep: string;
-    };
-    const { cep } = req.query as cepType;
-    const cepTreat = cep.replace('-', '');
-    if (cepTreat.length !== 8) {
-      throw { name: 'NotFoundError' };
-    }
-    const address = await enrollmentsService.getAddressFromCEP(cepTreat);
-    if (address.erro) {
-      throw { name: 'NotFoundError' };
-    }
+    const address = await enrollmentsService.getAddressFromCEP(cep);
     res.status(httpStatus.OK).send(address);
   } catch (error) {
     if (error.name === 'NotFoundError') {
