@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import httpStatus from 'http-status';
+import { PostTicket } from './../protocols';
 import eventsService from '@/services/tickets-service';
 import { AuthenticatedRequest } from '@/middlewares';
 
@@ -14,19 +15,21 @@ export async function getTicketsType(req: Request, res: Response) {
 
 export async function getUserTickets(req: AuthenticatedRequest, res: Response) {
   try {
-    const id = req.userId;
-    const tickets = await eventsService.getUserTickets(id);
-    return res.status(httpStatus.OK).send(tickets);
+    const userId = req.userId;
+    const ticket = await eventsService.getUserTickets(userId);
+    return res.status(httpStatus.OK).send(ticket);
   } catch (error) {
     return res.status(httpStatus.NOT_FOUND).send([]);
   }
 }
 
-export async function postUserTicket() {
-  // try {
-  //   const event = await eventsService.getFirstEvent();
-  //   return res.status(httpStatus.OK).send(event);
-  // } catch (error) {
-  //   return res.status(httpStatus.NOT_FOUND).send({});
-  // }
+export async function postUserTicket(req: AuthenticatedRequest, res: Response) {
+  try {
+    const userId = req.userId;
+    const { ticketTypeId } = req.body as PostTicket;
+    const ticket = await eventsService.postUserTicket(userId, ticketTypeId);
+    return res.status(httpStatus.CREATED).send(ticket);
+  } catch (error) {
+    return res.status(httpStatus.NOT_FOUND).send([]);
+  }
 }
