@@ -21,12 +21,14 @@ async function findUserTickets(enrollmentId: number): Promise<
 async function findTicketById(id: number): Promise<
   Ticket & {
     Enrollment: Enrollment;
+    TicketType: TicketType;
   }
 > {
   return prisma.ticket.findFirst({
     where: { id },
     include: {
       Enrollment: true,
+      TicketType: true,
     },
   });
 }

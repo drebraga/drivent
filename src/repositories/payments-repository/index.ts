@@ -1,5 +1,6 @@
 import { Payment } from '@prisma/client';
 import { prisma } from '@/config';
+import { PaymentData } from '@/protocols';
 
 async function findPayment(ticketId: number): Promise<Payment> {
   return prisma.payment.findFirst({
@@ -7,8 +8,20 @@ async function findPayment(ticketId: number): Promise<Payment> {
   });
 }
 
+async function createPayment(data: PaymentData, price: number): Promise<Payment> {
+  return prisma.payment.create({
+    data: {
+      ticketId: data.ticketId,
+      value: price,
+      cardIssuer: data.cardData.issuer,
+      cardLastDigits: data.cardData.number.toString().slice(-4),
+    },
+  });
+}
+
 const ticketsRepository = {
   findPayment,
+  createPayment,
 };
 
 export default ticketsRepository;
