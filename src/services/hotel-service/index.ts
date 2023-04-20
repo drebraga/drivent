@@ -16,7 +16,7 @@ async function getHotels(userId: number): Promise<Hotel[]> {
     throw paymentRequired();
 
   const hotel = await hotelRepository.getHotels();
-  if (!hotel || hotel.length === 0) throw badRequest();
+  if (!hotel || hotel.length === 0) throw notFoundError();
 
   return hotel;
 }
