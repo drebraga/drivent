@@ -118,7 +118,7 @@ model Hotel {
   image     String
   createdAt DateTime @default(now())
   updatedAt DateTime
-  Room      Room[]
+  Rooms      Room[]
 }
 
 model Room {

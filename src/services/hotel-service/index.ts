@@ -1,4 +1,4 @@
-import { Hotel } from '@prisma/client';
+import { Hotel, Room } from '@prisma/client';
 import { badRequest } from './errors';
 import ticketsRepository from '@/repositories/tickets-repository';
 import hotelRepository from '@/repositories/hotel-repository';
@@ -16,12 +16,12 @@ async function getHotels(userId: number): Promise<Hotel[]> {
     throw paymentRequired();
 
   const hotel = await hotelRepository.getHotels();
-  if (!hotel) throw badRequest();
+  if (!hotel || hotel.length === 0) throw badRequest();
 
   return hotel;
 }
 
-async function getHotelsById(userId: number, id: number): Promise<Hotel> {
+async function getHotelsById(userId: number, hotelId: number): Promise<Hotel & { Rooms: Room[] }> {
   const enrollment = await enrollmentRepository.findWithAddressByUserId(userId);
   if (!enrollment) throw notFoundError();
 
@@ -30,8 +30,8 @@ async function getHotelsById(userId: number, id: number): Promise<Hotel> {
   if (ticket.status === 'RESERVED' || !ticket.TicketType.includesHotel || ticket.TicketType.isRemote)
     throw paymentRequired();
 
-  const hotel = await hotelRepository.getHotelById(id);
-  if (!hotel) throw badRequest();
+  const hotel = await hotelRepository.getHotelById(hotelId);
+  if (!hotel) throw notFoundError();
 
   return hotel;
 }
