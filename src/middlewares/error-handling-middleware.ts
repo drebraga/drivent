@@ -40,7 +40,7 @@ export function handleApplicationErrors(err: ApplicationError, req: Request, res
   }
 
   /* eslint-disable-next-line no-console */
-  console.error(err.name);
+  console.error(err);
   res.status(httpStatus.INTERNAL_SERVER_ERROR).send({
     error: 'InternalServerError',
     message: 'Internal Server Error',

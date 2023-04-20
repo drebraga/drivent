@@ -1,5 +1,4 @@
 import { Hotel, Room } from '@prisma/client';
-import { badRequest } from './errors';
 import ticketsRepository from '@/repositories/tickets-repository';
 import hotelRepository from '@/repositories/hotel-repository';
 import { notFoundError } from '@/errors';
