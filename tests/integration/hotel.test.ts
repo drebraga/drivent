@@ -1,4 +1,4 @@
-import { Room } from '@prisma/client';
+import { Room, TicketType } from '@prisma/client';
 import httpStatus from 'http-status';
 import faker from '@faker-js/faker';
 import supertest from 'supertest';
@@ -62,7 +62,9 @@ describe('GET /hotels', () => {
     it('should respond with status 200', async () => {
       const user = await createUser();
       const enrollment = await createEnrollmentWithAddress(user);
-      const ticketType = await createHotelTicketType(false, true);
+      const isRemote = false;
+      const includesHotel = true;
+      const ticketType = await createHotelTicketType(isRemote, includesHotel);
       await createTicket(enrollment.id, ticketType.id, 'PAID');
       const token = await generateValidToken(user);
       const hotel = await createHotel();
@@ -102,7 +104,9 @@ describe('GET /hotels', () => {
       it('when the ticket is remote', async () => {
         const user = await createUser();
         const enrollment = await createEnrollmentWithAddress(user);
-        const ticketType = await createHotelTicketType(true, true);
+        const isRemote = true;
+        const includesHotel = true;
+        const ticketType = await createHotelTicketType(isRemote, includesHotel);
         await createTicket(enrollment.id, ticketType.id, 'PAID');
         const token = await generateValidToken(user);
 
@@ -116,7 +120,9 @@ describe('GET /hotels', () => {
       it('when the ticket do not include hotel', async () => {
         const user = await createUser();
         const enrollment = await createEnrollmentWithAddress(user);
-        const ticketType = await createHotelTicketType(false, false);
+        const isRemote = false;
+        const includesHotel = false;
+        const ticketType = await createHotelTicketType(isRemote, includesHotel);
         await createTicket(enrollment.id, ticketType.id, 'PAID');
         const token = await generateValidToken(user);
 
@@ -175,7 +181,9 @@ describe('GET /hotels/:id', () => {
     it('should respond with status 200', async () => {
       const user = await createUser();
       const enrollment = await createEnrollmentWithAddress(user);
-      const ticketType = await createHotelTicketType(false, true);
+      const isRemote = false;
+      const includesHotel = true;
+      const ticketType = await createHotelTicketType(isRemote, includesHotel);
       await createTicket(enrollment.id, ticketType.id, 'PAID');
       const token = await generateValidToken(user);
       const hotel = await createHotel();
@@ -223,7 +231,9 @@ describe('GET /hotels/:id', () => {
       it('when the ticket is remote', async () => {
         const user = await createUser();
         const enrollment = await createEnrollmentWithAddress(user);
-        const ticketType = await createHotelTicketType(true, true);
+        const isRemote = true;
+        const includesHotel = true;
+        const ticketType = await createHotelTicketType(isRemote, includesHotel);
         await createTicket(enrollment.id, ticketType.id, 'PAID');
         const token = await generateValidToken(user);
 
@@ -237,7 +247,9 @@ describe('GET /hotels/:id', () => {
       it('when the ticket do not include hotel', async () => {
         const user = await createUser();
         const enrollment = await createEnrollmentWithAddress(user);
-        const ticketType = await createHotelTicketType(false, false);
+        const isRemote = false;
+        const includesHotel = false;
+        const ticketType = await createHotelTicketType(isRemote, includesHotel);
         await createTicket(enrollment.id, ticketType.id, 'PAID');
         const token = await generateValidToken(user);
 
