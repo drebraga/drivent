@@ -1,11 +1,11 @@
+import { Room } from '@prisma/client';
 import httpStatus from 'http-status';
 import faker from '@faker-js/faker';
 import supertest from 'supertest';
-import { createHotel, createRoom } from '../factories/hotels-factory';
+import { createHotel, createRoom, createHotelTicketType, hotels, hotelById } from '../factories/hotels-factory';
 import { createEnrollmentWithAddress, createTicket, createTicketType, createUser } from '../factories';
 import { cleanDb, generateValidToken } from '../helpers';
 import app, { init } from '@/app';
-import { prisma } from '@/config';
 
 beforeAll(async () => {
   await init();
@@ -62,23 +62,26 @@ describe('GET /hotels', () => {
     it('should respond with status 200', async () => {
       const user = await createUser();
       const enrollment = await createEnrollmentWithAddress(user);
-      const ticketType = await prisma.ticketType.create({
-        data: {
-          name: faker.name.findName(),
-          price: faker.datatype.number(),
-          isRemote: false,
-          includesHotel: true,
-        },
-      });
+      const ticketType = await createHotelTicketType(false, true);
       await createTicket(enrollment.id, ticketType.id, 'PAID');
       const token = await generateValidToken(user);
       const hotel = await createHotel();
       await createRoom(hotel.id);
+      const result = await hotels();
 
       const response = await server.get('/hotels').set({
         Authorization: `Bearer ${token}`,
       });
       expect(response.status).toBe(httpStatus.OK);
+      expect(response.body).toEqual([
+        {
+          id: result[0].id,
+          name: result[0].name,
+          image: result[0].image,
+          createdAt: result[0].createdAt.toISOString(),
+          updatedAt: result[0].updatedAt.toISOString(),
+        },
+      ]);
     });
 
     describe('should respond with status 402', () => {
@@ -99,14 +102,7 @@ describe('GET /hotels', () => {
       it('when the ticket is remote', async () => {
         const user = await createUser();
         const enrollment = await createEnrollmentWithAddress(user);
-        const ticketType = await prisma.ticketType.create({
-          data: {
-            name: faker.name.findName(),
-            price: faker.datatype.number(),
-            isRemote: true,
-            includesHotel: true,
-          },
-        });
+        const ticketType = await createHotelTicketType(true, true);
         await createTicket(enrollment.id, ticketType.id, 'PAID');
         const token = await generateValidToken(user);
 
@@ -120,14 +116,7 @@ describe('GET /hotels', () => {
       it('when the ticket do not include hotel', async () => {
         const user = await createUser();
         const enrollment = await createEnrollmentWithAddress(user);
-        const ticketType = await prisma.ticketType.create({
-          data: {
-            name: faker.name.findName(),
-            price: faker.datatype.number(),
-            isRemote: false,
-            includesHotel: false,
-          },
-        });
+        const ticketType = await createHotelTicketType(false, false);
         await createTicket(enrollment.id, ticketType.id, 'PAID');
         const token = await generateValidToken(user);
 
@@ -186,23 +175,34 @@ describe('GET /hotels/:id', () => {
     it('should respond with status 200', async () => {
       const user = await createUser();
       const enrollment = await createEnrollmentWithAddress(user);
-      const ticketType = await prisma.ticketType.create({
-        data: {
-          name: faker.name.findName(),
-          price: faker.datatype.number(),
-          isRemote: false,
-          includesHotel: true,
-        },
-      });
+      const ticketType = await createHotelTicketType(false, true);
       await createTicket(enrollment.id, ticketType.id, 'PAID');
       const token = await generateValidToken(user);
       const hotel = await createHotel();
       await createRoom(hotel.id);
+      const result = await hotelById(hotel.id);
 
       const response = await server.get(`/hotels/${hotel.id}`).set({
         Authorization: `Bearer ${token}`,
       });
       expect(response.status).toBe(httpStatus.OK);
+      expect(response.body).toEqual({
+        id: result.id,
+        name: result.name,
+        image: result.image,
+        createdAt: result.createdAt.toISOString(),
+        updatedAt: result.updatedAt.toISOString(),
+        Rooms: [
+          {
+            id: result.Rooms[0].id,
+            name: result.Rooms[0].name,
+            capacity: result.Rooms[0].capacity,
+            hotelId: result.Rooms[0].hotelId,
+            createdAt: result.Rooms[0].createdAt.toISOString(),
+            updatedAt: result.Rooms[0].updatedAt.toISOString(),
+          },
+        ],
+      });
     });
 
     describe('should respond with status 402', () => {
@@ -223,14 +223,7 @@ describe('GET /hotels/:id', () => {
       it('when the ticket is remote', async () => {
         const user = await createUser();
         const enrollment = await createEnrollmentWithAddress(user);
-        const ticketType = await prisma.ticketType.create({
-          data: {
-            name: faker.name.findName(),
-            price: faker.datatype.number(),
-            isRemote: true,
-            includesHotel: true,
-          },
-        });
+        const ticketType = await createHotelTicketType(true, true);
         await createTicket(enrollment.id, ticketType.id, 'PAID');
         const token = await generateValidToken(user);
 
@@ -244,14 +237,7 @@ describe('GET /hotels/:id', () => {
       it('when the ticket do not include hotel', async () => {
         const user = await createUser();
         const enrollment = await createEnrollmentWithAddress(user);
-        const ticketType = await prisma.ticketType.create({
-          data: {
-            name: faker.name.findName(),
-            price: faker.datatype.number(),
-            isRemote: false,
-            includesHotel: false,
-          },
-        });
+        const ticketType = await createHotelTicketType(false, false);
         await createTicket(enrollment.id, ticketType.id, 'PAID');
         const token = await generateValidToken(user);
 
