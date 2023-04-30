@@ -1,9 +1,18 @@
-import { Booking } from '@prisma/client';
+import { Booking, Room } from '@prisma/client';
 import { prisma } from '@/config';
 
-async function findUserBookings(userId: number): Promise<Booking> {
+export type UserBooking = {
+  id: number;
+  Room: Room;
+};
+
+async function findUserBookings(userId: number): Promise<UserBooking> {
   return prisma.booking.findFirst({
     where: { userId },
+    select: {
+      id: true,
+      Room: true,
+    },
   });
 }
 

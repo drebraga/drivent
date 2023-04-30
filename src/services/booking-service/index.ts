@@ -1,5 +1,5 @@
 import { Booking } from '@prisma/client';
-import bookingRepository from '@/repositories/booking-repository';
+import bookingRepository, { UserBooking } from '@/repositories/booking-repository';
 import { notFoundError } from '@/errors';
 import hotelRepository from '@/repositories/hotel-repository';
 import { overBooking } from '@/errors/overBooking';
@@ -16,7 +16,14 @@ async function checkUserTicket(userId: number) {
     throw overBooking();
 }
 
-async function getBooking(userId: number): Promise<Booking> {
+async function checkHotel(roomId: number) {
+  const room = await hotelRepository.getRoom(roomId);
+  if (!room) throw notFoundError();
+  const roomBookings = await bookingRepository.findRoomBookings(roomId);
+  if (roomBookings.length >= room.capacity) throw overBooking();
+}
+
+async function getBooking(userId: number): Promise<UserBooking> {
   const booking = await bookingRepository.findUserBookings(userId);
 
   if (!booking) throw notFoundError();
@@ -26,22 +33,16 @@ async function getBooking(userId: number): Promise<Booking> {
 
 async function createBooking(userId: number, roomId: number): Promise<number> {
   await checkUserTicket(userId);
-  const room = await hotelRepository.getRoom(roomId);
-  if (!room) throw notFoundError();
-  const roomBookings = await bookingRepository.findRoomBookings(roomId);
-  if (!roomBookings.length) throw overBooking();
+  await checkHotel(roomId);
   const booking = await bookingRepository.create(userId, roomId);
 
   return booking.id;
 }
 
 async function updateBooking(userId: number, id: number, roomId: number): Promise<number> {
-  const userBooking = bookingRepository.findUserBookings(userId);
+  const userBooking = await bookingRepository.findUserBookings(userId);
   if (!userBooking) throw overBooking();
-  const room = await hotelRepository.getRoom(roomId);
-  if (!room) throw notFoundError();
-  const roomBookings = await bookingRepository.findRoomBookings(roomId);
-  if (roomBookings.length >= room.capacity) throw overBooking();
+  await checkHotel(roomId);
   const booking = await bookingRepository.update(id, roomId);
 
   return booking.id;
