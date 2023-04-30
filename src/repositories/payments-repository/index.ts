@@ -19,9 +19,9 @@ async function createPayment(data: PaymentData, price: number): Promise<Payment>
   });
 }
 
-const ticketsRepository = {
+const paymentsRepository = {
   findPayment,
   createPayment,
 };
 
-export default ticketsRepository;
+export default paymentsRepository;

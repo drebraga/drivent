@@ -13,7 +13,7 @@ async function findRoomBookings(roomId: number): Promise<Booking[]> {
   });
 }
 
-async function create(userId: number, roomId: number) {
+async function create(userId: number, roomId: number): Promise<Booking> {
   return prisma.booking.create({
     data: {
       userId,
@@ -22,7 +22,7 @@ async function create(userId: number, roomId: number) {
   });
 }
 
-async function update(id: number, roomId: number) {
+async function update(id: number, roomId: number): Promise<Booking> {
   return prisma.booking.update({
     where: { id },
     data: { roomId },
