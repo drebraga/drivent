@@ -17,7 +17,7 @@ export async function createBooking(req: AuthenticatedRequest, res: Response, ne
     const { userId } = req;
     const { roomId } = req.body;
     const bookingId = await bookingService.createBooking(userId, roomId);
-    return res.send(bookingId);
+    return res.send({ bookingId });
   } catch (err) {
     next(err);
   }
@@ -29,7 +29,7 @@ export async function updateBooking(req: AuthenticatedRequest, res: Response, ne
     const { id } = req.params;
     const { roomId } = req.body;
     const bookingId = await bookingService.updateBooking(userId, parseInt(id), roomId);
-    return res.send(bookingId);
+    return res.send({ bookingId });
   } catch (err) {
     next(err);
   }
