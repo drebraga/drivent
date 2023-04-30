@@ -42,6 +42,7 @@ async function updateBooking(userId: number, id: number, roomId: number): Promis
   const userBooking = await bookingRepository.findUserBookings(userId);
   if (!userBooking) throw overBooking();
   await checkHotel(roomId);
+  console.log(id, roomId);
   const booking = await bookingRepository.update(id, roomId);
 
   return booking.id;

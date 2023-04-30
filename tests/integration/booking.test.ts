@@ -116,7 +116,7 @@ describe('POST /booking', () => {
   });
 
   describe('when token is valid', () => {
-    it('should respond with status 200 and user booking', async () => {
+    it('should respond with status 200 and user bookingId', async () => {
       const user = await createUser();
       const token = await generateValidToken(user);
       const enrollment = await createEnrollmentWithAddress(user);
@@ -160,5 +160,29 @@ describe('PUT /booking', () => {
     const response = await server.get('/tickets/types').set('Authorization', `Bearer ${token}`);
 
     expect(response.status).toBe(httpStatus.UNAUTHORIZED);
+  });
+
+  describe('when token is valid', () => {
+    it('should respond with status 200 and user bookingId', async () => {
+      const user = await createUser();
+      const token = await generateValidToken(user);
+      const enrollment = await createEnrollmentWithAddress(user);
+      const isRemote = false;
+      const includesHotel = true;
+      const ticketType = await createHotelTicketType(isRemote, includesHotel);
+      await createTicket(enrollment.id, ticketType.id, TicketStatus.PAID);
+      const hotel = await createHotel();
+      const room = await createRoom(hotel.id);
+      const userBooking = await createBooking(user.id, room.id);
+      const newRoom = await createRoom(hotel.id);
+
+      const response = await server.put(`/booking/${userBooking.id}`).set('Authorization', `Bearer ${token}`).send({
+        roomId: newRoom.id,
+      });
+      const booking = await getBooking(user.id);
+
+      expect(response.status).toBe(httpStatus.OK);
+      expect(response.body).toEqual({ bookingId: booking.id });
+    });
   });
 });
